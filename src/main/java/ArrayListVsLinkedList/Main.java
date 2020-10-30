@@ -14,9 +14,15 @@ public class Main {
     private static final int ALL_COUNT = 1000_000;
     private static final int GET_ITER = 100000;
 
+
     public static void main(String[] args) {
-        withoutStream();
-        withStreams();
+
+//        fixTimeDeleteInEnd();
+//        fixTimeDeleteInBegin();
+//        fixTimeDeleteInMid();
+        // fixTimeAdd();
+        // fixTimeAddInBegin();
+        fixTimeAddInMid();
     }
 
     private static void withoutStream() {
@@ -69,4 +75,131 @@ public class Main {
 
         System.out.println(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
     }
+
+    private static void fixTimeDeleteInEnd() {
+        long s = System.nanoTime();
+        List<Double> listArray = getArrayList();
+        for (int i = ALL_COUNT - 1; i > GET_ITER; i--) {
+            listArray.remove(i);
+        }
+        System.out.println("fixTimeDeleteInEnd ArrayList " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
+
+        s = System.nanoTime();
+        List<Double> linkedList = getArrayList();
+        for (int i = ALL_COUNT - 1; i > GET_ITER; i--) {
+            linkedList.remove(i);
+        }
+        System.out.println("fixTimeDeleteInEnd LinkedList " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
+    }
+
+    private static void fixTimeDeleteInBegin() {
+        long s = System.nanoTime();
+        ArrayList<Double> listArray = getArrayList();
+        for (int i = 0; i < GET_ITER; i++) {
+            listArray.remove(0);
+        }
+        System.out.println("fixTimeDeleteInBegin ArrayList " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
+
+        s = System.nanoTime();
+        LinkedList<Double> linkedList = getLinkedList();
+        for (int i = 0; i < GET_ITER; i++) {
+            linkedList.pollFirst();
+        }
+        System.out.println("fixTimeDeleteInBegin LinkedList " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
+    }
+
+
+    private static void fixTimeDeleteInMid() {
+        long s = System.nanoTime();
+        List<Double> listArray = getArrayList();
+        for (int i = ALL_COUNT / 2; i < (ALL_COUNT / 2) + GET_ITER; i++) {
+            listArray.remove(ALL_COUNT / 2);
+        }
+        System.out.println("fixTimeDeleteInMid ArrayList " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
+
+        s = System.nanoTime();
+        List<Double> linkedList = getLinkedList();
+        for (int i = ALL_COUNT / 2; i < (ALL_COUNT / 2) + GET_ITER; i++) {
+            linkedList.remove(i);
+        }
+        System.out.println("fixTimeDeleteInMid LinkedList " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
+    }
+
+
+    private static void fixTimeAdd() {
+        List<Double> linkedList = getLinkedList();
+        long s = System.nanoTime();
+        for (int i = 0; i < ALL_COUNT; i++) {
+            linkedList.add(Math.random());
+        }
+        System.out.println("fixTimeAdd LinkedList " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
+
+
+        List<Double> listArray = getArrayList();
+
+        s = System.nanoTime();
+        for (int i = 0; i < ALL_COUNT; i++) {
+            listArray.add(Math.random());
+        }
+        System.out.println("fixTimeAdd ArrayList " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
+
+    }
+
+    private static void fixTimeAddInBegin() {
+        List<Double> linkedList = getLinkedList();
+        long s = System.nanoTime();
+        for (int i = 0; i < GET_ITER; i++) {
+            linkedList.add(0, Math.random());
+        }
+        System.out.println("fixTimeAddInBegin LinkedList " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
+
+
+        List<Double> listArray = getArrayList();
+
+        s = System.nanoTime();
+        for (int i = 0; i < GET_ITER; i++) {
+            listArray.add(0, Math.random());
+        }
+        System.out.println("fixTimeAddInBegin ArrayList " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
+
+    }
+
+    private static void fixTimeAddInMid() {
+        List<Double> linkedList = getLinkedList();
+        long s = System.nanoTime();
+        for (int i = ALL_COUNT / 2; i < ALL_COUNT / 2 + GET_ITER; i++) {
+            linkedList.add(i, Math.random());
+        }
+        System.out.println("fixTimeAddInMi LinkedList " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
+
+
+        List<Double> listArray = getArrayList();
+
+        s = System.nanoTime();
+        for (int i = ALL_COUNT / 2; i < ALL_COUNT / 2 + GET_ITER; i++) {
+            listArray.add(i, Math.random());
+        }
+        System.out.println("fixTimeAddInMi ArrayList " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
+
+    }
+
+
+    private static ArrayList<Double> getArrayList() {
+        return new Random()
+                .doubles()
+                .limit(ALL_COUNT)
+                .boxed()
+                .collect(Collectors.toCollection(ArrayList::new));
+
+    }
+
+    private static LinkedList<Double> getLinkedList() {
+        return DoubleStream.generate(Math::random)
+                .limit(ALL_COUNT)
+                .boxed()
+                .collect(Collectors.toCollection(LinkedList::new));
+
+
+    }
+
 }
