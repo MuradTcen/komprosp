@@ -1,6 +1,6 @@
-package BinarySearchTree.test;
+package binarySearchTree.test;
 
-import BinarySearchTree.Node;
+import binarySearchTree.Node;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
