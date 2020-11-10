@@ -1,7 +1,9 @@
 package myLinkedList;
 
-public interface Methods<T> {
-    void put(T value);
+public interface Methods {
+    void add(int value);
 
-    T get(int index);
+    int get(int index);
+
+    void print();
 }
