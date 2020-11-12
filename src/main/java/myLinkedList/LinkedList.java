@@ -57,8 +57,8 @@ public class LinkedList implements Methods {
     }
 
     @Override
-    public void addInMed(int index, int value) {
-        Node findNode = node(index);
+    public void add(int index, int value) {
+        Node findNode = node(index - 1);
         Node insertNode = new Node(value);
         insertNode.setPrev(findNode);
         insertNode.setNext(findNode.getNext());
@@ -107,6 +107,19 @@ public class LinkedList implements Methods {
     }
 
     @Override
+    public int[] toArray() {
+        int[] arr = new int[size];
+        int i = 0;
+        Node node = first;
+        while (node != null) {
+            arr[i] = node.getValue();
+            i++;
+            node = node.getNext();
+        }
+        return arr;
+    }
+
+    @Override
     public void print() {
         Node node = first;
         while (node != null) {
@@ -115,13 +128,19 @@ public class LinkedList implements Methods {
         }
     }
 
+    public int getSize() {
+        return size;
+    }
+
     public static void main(String[] args) {
         LinkedList linkedList = new LinkedList();
         linkedList.add(5);
         linkedList.add(7);
         linkedList.add(9);
-        linkedList.deleteIndex(7);
-        linkedList.print();
+        // linkedList.deleteIndex(7);
+        //linkedList.print();
+        System.out.println(linkedList.get(2));
+        System.out.println(linkedList.get(1));
 
     }
 }

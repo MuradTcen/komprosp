@@ -7,10 +7,11 @@ public interface Methods {
 
     void delete(int value);
 
-    void addInMed(int index, int value);
+    void add(int index, int value);
 
     void deleteIndex(int index);
 
-    void print();
+    int[] toArray();
 
+    void print();
 }

@@ -29,7 +29,7 @@ public class SingleLinkedList implements Methods {
     }
 
     @Override
-    public void addInMed(int index, int value) {
+    public void add(int index, int value) {
 
     }
 
@@ -37,6 +37,11 @@ public class SingleLinkedList implements Methods {
     public void deleteIndex(int index) {
 
 
+    }
+
+    @Override
+    public int[] toArray() {
+        return new int[0];
     }
 
     @Override
