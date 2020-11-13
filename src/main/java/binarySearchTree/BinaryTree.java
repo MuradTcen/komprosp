@@ -13,8 +13,7 @@ public class BinaryTree {
      */
     public void add(int value) {
         if (root == null) {
-            Node newNode = new Node(value);
-            root = newNode;
+            root = new Node(value);
         } else {
             addRightLeft(root, value);
 
