@@ -1,5 +1,8 @@
 package binarySearchTree;
 
+/**
+ * Узлы в дереве.
+ */
 public class Node {
 
     private int value;
