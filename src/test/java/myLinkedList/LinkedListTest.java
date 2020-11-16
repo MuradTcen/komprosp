@@ -3,6 +3,8 @@ package myLinkedList;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class LinkedListTest {
@@ -15,9 +17,7 @@ class LinkedListTest {
         list.add(23);
         int[] actual = list.toArray();
         int[] expected = new int[]{1, 100, 23};
-        for (int i = 0; i < list.getSize(); i++) {
-            assertThat(actual[i]).isEqualTo(expected[i]);
-        }
+        assertThat(Arrays.equals(actual, expected)).isTrue();
     }
 
     @Test
@@ -29,9 +29,7 @@ class LinkedListTest {
         list.delete(23);
         int[] actual = list.toArray();
         int[] expected = new int[]{1, 100};
-        for (int i = 0; i < list.getSize(); i++) {
-            assertThat(actual[i]).isEqualTo(expected[i]);
-        }
+        assertThat(Arrays.equals(actual, expected)).isTrue();
     }
 
     @Test
@@ -45,8 +43,6 @@ class LinkedListTest {
         list.add(3, -23);
         int[] actual = list.toArray();
         int[] expected = new int[]{1, 100, -10, -23, 23, 43};
-        for (int i = 0; i < list.getSize(); i++) {
-            assertThat(actual[i]).isEqualTo(expected[i]);
-        }
+        assertThat(Arrays.equals(actual, expected)).isTrue();
     }
 }
