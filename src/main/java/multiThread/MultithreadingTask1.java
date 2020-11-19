@@ -3,19 +3,21 @@ package multiThread;
 import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Random;
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.lang.Thread.sleep;
 import static java.math.BigInteger.valueOf;
 
 public class MultithreadingTask1 {
 
     private static void withoutBlockingQueue() {
-        List<BigInteger> fibonacciNumbers = new LinkedList<>();
+        long s = System.nanoTime();
+        Queue<BigInteger> fibonacciNumbers = new LinkedList<>();
         List<BigInteger> list = new LinkedList<>();
         Thread thread1;
         AtomicInteger count = new AtomicInteger();
@@ -27,8 +29,11 @@ public class MultithreadingTask1 {
             BigInteger predPred = valueOf(0);
             BigInteger pred = valueOf(1);
             BigInteger sum;
-            synchronized (lock) {
-                for (i.set(0); i.get() < 500; i.getAndIncrement()) {
+            fibonacciNumbers.add(predPred);
+            fibonacciNumbers.add(pred);
+
+            for (i.set(2); i.get() < 500; i.getAndIncrement()) {
+                synchronized (lock) {
                     sum = (pred.add(predPred));
                     fibonacciNumbers.add(sum);
                     predPred = pred;
@@ -51,8 +56,8 @@ public class MultithreadingTask1 {
 //                    }
 
                 }
-                cdl.countDown();
             }
+            cdl.countDown();
 //
         });
         thread1.start();
@@ -60,25 +65,22 @@ public class MultithreadingTask1 {
         Создание, инициализация и запуск второго  потока
          */
         Thread thread2 = new Thread(() -> {
-            while (thread1.isAlive() || fibonacciNumbers.size() != 0) {
+            while (i.get() != 500 || fibonacciNumbers.size() != 0) {
                 synchronized (lock) {
-                    while (fibonacciNumbers.size() != 0) {
-                        BigInteger temp = fibonacciNumbers.get(fibonacciNumbers.size() - 1);
-                        list.add(temp);
-                        fibonacciNumbers.remove(fibonacciNumbers.size() - 1);
-                        if (temp.remainder(valueOf(3)).equals(valueOf(0))) {
-                            count.getAndIncrement();
-
+                    if (fibonacciNumbers.size() == 0) {
+                        try {
+                            lock.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
-                        lock.notify();
                     }
+                    BigInteger temp = fibonacciNumbers.poll();
+                    list.add(temp);
+                    if (temp.remainder(valueOf(3)).equals(valueOf(0))) {
+                        count.getAndIncrement();
 
-                    if (thread1.isAlive())
-                    try {
-                        lock.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
                     }
+                    lock.notify();
                 }
             }
             cdl.countDown();
@@ -91,29 +93,37 @@ public class MultithreadingTask1 {
             e.printStackTrace();
         }
 
+        System.out.println("withoutBlockingQueue=" + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
          /*
         Создание, инициализация и запуск третьего потока
          */
         new Thread(() -> {
             String finalResult = Thread.currentThread().getName() + '@' + count;
-            assertions(list, finalResult); // запуск проверок
+            assertions1(list, finalResult); // запуск проверок
         }, "Thread-3"
         ).start();
     }
 
     private static void withBlockingQueue() {
+        long s = System.nanoTime();
         List<BigInteger> fibonacciNumbers = new LinkedList<>();
         BlockingQueue<BigInteger> fibonacciNumbersQueue = new LinkedBlockingQueue<>();
         Thread thread1;
         AtomicInteger count = new AtomicInteger();
         CountDownLatch cdl = new CountDownLatch(2);
+        AtomicInteger i = new AtomicInteger();
         thread1 = new Thread(() -> {
             BigInteger predPred = valueOf(0);
             BigInteger pred = valueOf(1);
             BigInteger sum = valueOf(1);
-            Random j = new Random();
+            try {
+                fibonacciNumbersQueue.put(valueOf(0));
+                fibonacciNumbersQueue.put(valueOf(1));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
-            for (int i = 0; i < 500; i++) {
+            for (i.set(2); i.get() < 500; i.getAndIncrement()) {
                 try {
 //                    try {
 //                         Thread.sleep((int) (Math.random() * 300));
@@ -129,17 +139,21 @@ public class MultithreadingTask1 {
                 pred = sum;
 
             }
+            try {
+                sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             cdl.countDown();
 
         });
-
         thread1.start();
 
          /*
         Создание, инициализация и запуск второго потока
          */
         Thread thread2 = new Thread(() -> {
-            while (thread1.isAlive() || fibonacciNumbersQueue.size() != 0) {
+            while (i.get() != 500 || fibonacciNumbersQueue.size() != 0) {
                 BigInteger temp = null;
                 try {
                     temp = fibonacciNumbersQueue.take();
@@ -163,31 +177,39 @@ public class MultithreadingTask1 {
             e.printStackTrace();
         }
 
+        System.out.println("withBlockingQueue=" + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
 
         /*
         Создание, инициализация и запуск третьего потока
          */
         new Thread(() -> {
             String finalResult = Thread.currentThread().getName() + '@' + count.get();
-            assertions(fibonacciNumbers, finalResult); // запуск проверок
+            assertions2(fibonacciNumbers, finalResult); // запуск проверок
         }, "Thread-3"
         ).start();
+
     }
 
     public static void main(String[] args) {
-        long s = System.nanoTime();
-        withBlockingQueue();
-        System.out.println("withBlockingQueue=" + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
-
-        s = System.nanoTime();
         withoutBlockingQueue();
-        System.out.println("withoutBlockingQueue=" + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - s));
+        //withBlockingQueue();
     }
 
-    private static void assertions(List fibonacciNumbers, String finalResult) {
+    private static void assertions1(List fibonacciNumbers, String finalResult) {
         if (fibonacciNumbers == null)
             throw new AssertionError("Переменная fibonacciNumbers не инициализирована!");
-        else if (fibonacciNumbers.size() != 500 && !fibonacciNumbers.toString().equals(get500FibonacciNumbersAsString()))
+        else if (fibonacciNumbers.size() != 500 || !fibonacciNumbers.toString().equals(get500FibonacciNumbersAsString()))
+            throw new AssertionError("Числа Фибоначчи вычислены неверно!");
+        else if (!"Thread-3@125".equals(finalResult))
+            throw new AssertionError("finalResult содержит неверный результат!");
+        else System.out.println("Тесты пройдены успешно");
+    }
+
+
+    private static void assertions2(List fibonacciNumbers, String finalResult) {
+        if (fibonacciNumbers == null)
+            throw new AssertionError("Переменная fibonacciNumbers не инициализирована!");
+        else if (fibonacciNumbers.size() != 500 || !fibonacciNumbers.toString().equals(get500FibonacciNumbersAsString()))
             throw new AssertionError("Числа Фибоначчи вычислены неверно!");
         else if (!"Thread-3@125".equals(finalResult))
             throw new AssertionError("finalResult содержит неверный результат!");
