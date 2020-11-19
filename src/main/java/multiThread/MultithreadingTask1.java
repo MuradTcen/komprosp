@@ -10,7 +10,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static java.lang.Thread.sleep;
 import static java.math.BigInteger.valueOf;
 
 public class MultithreadingTask1 {
@@ -142,11 +141,6 @@ public class MultithreadingTask1 {
                 pred = sum;
 
             }
-            try {
-                sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
             cdl.countDown();
 
         });
@@ -194,8 +188,8 @@ public class MultithreadingTask1 {
     }
 
     public static void main(String[] args) {
-        withBlockingQueue();
         withoutBlockingQueue();
+        // withBlockingQueue();
     }
 
     private static void assertions1(List fibonacciNumbers, String finalResult) {
