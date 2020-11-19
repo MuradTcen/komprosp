@@ -14,6 +14,7 @@ import static java.lang.Thread.sleep;
 import static java.math.BigInteger.valueOf;
 
 public class MultithreadingTask1 {
+    private static final BigInteger LASTNUM = new BigInteger("139423224561697880139724382870407283950070256587697307264108962948325571622863290691557658876222521294125");
 
     private static void withoutBlockingQueue() {
         long s = System.nanoTime();
@@ -22,7 +23,6 @@ public class MultithreadingTask1 {
         Thread thread1;
         AtomicInteger count = new AtomicInteger();
         CountDownLatch cdl = new CountDownLatch(2);
-        AtomicInteger i = new AtomicInteger();
         Object lock = new Object();
 
         thread1 = new Thread(() -> {
@@ -32,7 +32,7 @@ public class MultithreadingTask1 {
             fibonacciNumbers.add(predPred);
             fibonacciNumbers.add(pred);
 
-            for (i.set(2); i.get() < 500; i.getAndIncrement()) {
+            for (int i = 2; i < 501; i++) {
                 synchronized (lock) {
                     sum = (pred.add(predPred));
                     fibonacciNumbers.add(sum);
@@ -65,7 +65,8 @@ public class MultithreadingTask1 {
         Создание, инициализация и запуск второго  потока
          */
         Thread thread2 = new Thread(() -> {
-            while (i.get() != 500 || fibonacciNumbers.size() != 0) {
+            BigInteger temp = valueOf(-1);
+            while (!temp.equals(LASTNUM)) {
                 synchronized (lock) {
                     if (fibonacciNumbers.size() == 0) {
                         try {
@@ -74,11 +75,13 @@ public class MultithreadingTask1 {
                             e.printStackTrace();
                         }
                     }
-                    BigInteger temp = fibonacciNumbers.poll();
-                    list.add(temp);
-                    if (temp.remainder(valueOf(3)).equals(valueOf(0))) {
-                        count.getAndIncrement();
+                    temp = fibonacciNumbers.poll();
+                    if (!temp.equals(LASTNUM)) {
+                        list.add(temp);
+                        if (temp.remainder(valueOf(3)).equals(valueOf(0))) {
+                            count.getAndIncrement();
 
+                        }
                     }
                     lock.notify();
                 }
@@ -191,8 +194,8 @@ public class MultithreadingTask1 {
     }
 
     public static void main(String[] args) {
+        withBlockingQueue();
         withoutBlockingQueue();
-        //withBlockingQueue();
     }
 
     private static void assertions1(List fibonacciNumbers, String finalResult) {
