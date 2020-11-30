@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.math.BigInteger.valueOf;
 
 public class MultithreadingTask1 {
-    private static final BigInteger LASTNUM = new BigInteger("139423224561697880139724382870407283950070256587697307264108962948325571622863290691557658876222521294125");
 
     private static void withoutBlockingQueue() {
         long s = System.nanoTime();
@@ -23,6 +22,7 @@ public class MultithreadingTask1 {
         AtomicInteger count = new AtomicInteger();
         CountDownLatch cdl = new CountDownLatch(2);
         Object lock = new Object();
+        AtomicInteger i = new AtomicInteger();
 
         thread1 = new Thread(() -> {
             BigInteger predPred = valueOf(0);
@@ -31,29 +31,14 @@ public class MultithreadingTask1 {
             fibonacciNumbers.add(predPred);
             fibonacciNumbers.add(pred);
 
-            for (int i = 2; i < 501; i++) {
+            for (i.set(2); i.get() < 500; i.getAndIncrement()) {
                 synchronized (lock) {
                     sum = (pred.add(predPred));
                     fibonacciNumbers.add(sum);
                     predPred = pred;
                     pred = sum;
 
-//                    try {
-//                        Thread.sleep((int) (Math.random() * 300));
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-
                     lock.notify();
-                    //если нужно задать capasity
-//                    if(i.get() ==10){
-//                        try {
-//                            lock.wait();
-//                        } catch (InterruptedException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-
                 }
             }
             cdl.countDown();
@@ -64,25 +49,28 @@ public class MultithreadingTask1 {
         Создание, инициализация и запуск второго  потока
          */
         Thread thread2 = new Thread(() -> {
-            BigInteger temp = valueOf(-1);
-            while (!temp.equals(LASTNUM)) {
+            BigInteger temp;
+            while ((i.get() != 500) || (!fibonacciNumbers.isEmpty())) {
                 synchronized (lock) {
-                    if (fibonacciNumbers.size() == 0) {
+                    if (fibonacciNumbers.isEmpty()) {
                         try {
                             lock.wait();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     }
-                    temp = fibonacciNumbers.poll();
-                    if (!temp.equals(LASTNUM)) {
-                        list.add(temp);
-                        if (temp.remainder(valueOf(3)).equals(valueOf(0))) {
-                            count.getAndIncrement();
+                    if (!fibonacciNumbers.isEmpty()) {
+                        temp = fibonacciNumbers.poll();
+                        {
+                            list.add(temp);
+                            if (temp.remainder(valueOf(3)).equals(valueOf(0))) {
+                                count.getAndIncrement();
 
+                            }
                         }
                     }
-                    lock.notify();
+                    //FIXME кого будит этот нотифай? По идее продюсер(тред-1) должен ждать при заполнении буфера, но в данной реализации паттерна буфер не ограничен и тред-1 не вызывает метод wait
+                    // lock.notify(); нужен только в том случае, если у первого потоко есть ограничение на размер входных данных, который может быть меньше 500,тогда первый поток идет в ожидание
                 }
             }
             cdl.countDown();
@@ -127,11 +115,6 @@ public class MultithreadingTask1 {
 
             for (i.set(2); i.get() < 500; i.getAndIncrement()) {
                 try {
-//                    try {
-//                         Thread.sleep((int) (Math.random() * 300));
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
                     sum = (pred.add(predPred));
                     fibonacciNumbersQueue.put(sum);
                 } catch (InterruptedException e) {
@@ -141,6 +124,11 @@ public class MultithreadingTask1 {
                 pred = sum;
 
             }
+//            try {
+////                sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
             cdl.countDown();
 
         });
@@ -150,7 +138,7 @@ public class MultithreadingTask1 {
         Создание, инициализация и запуск второго потока
          */
         Thread thread2 = new Thread(() -> {
-            while (i.get() != 500 || fibonacciNumbersQueue.size() != 0) {
+            while ((i.get() != 500) || !(fibonacciNumbersQueue.isEmpty())) {
                 BigInteger temp = null;
                 try {
                     temp = fibonacciNumbersQueue.take();
@@ -158,9 +146,10 @@ public class MultithreadingTask1 {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                assert temp != null;
-                if ((temp.remainder(valueOf(3))).equals(valueOf(0))) {
-                    count.getAndIncrement();
+                if (temp != null) {
+                    if ((temp.remainder(valueOf(3))).equals(valueOf(0))) {
+                        count.getAndIncrement();
+                    }
                 }
             }
             cdl.countDown();
@@ -188,8 +177,8 @@ public class MultithreadingTask1 {
     }
 
     public static void main(String[] args) {
+        //withBlockingQueue();
         withoutBlockingQueue();
-        // withBlockingQueue();
     }
 
     private static void assertions1(List fibonacciNumbers, String finalResult) {
