@@ -1,6 +1,3 @@
-package myLinkedList;
-
-
 import lexer.Lexer;
 import org.junit.jupiter.api.Test;
 
